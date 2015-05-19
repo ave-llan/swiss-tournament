@@ -7,3 +7,15 @@
 -- these lines here.
 
 
+
+CREATE TABLE players (
+    id serial PRIMARY KEY,
+    name text
+);
+
+CREATE TABLE matches (
+    id serial PRIMARY KEY,
+    player1 int REFERENCES players(id),
+    player2 int REFERENCES players(id),
+    winner  int REFERENCES players(id)
+);
