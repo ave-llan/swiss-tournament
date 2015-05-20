@@ -4,6 +4,7 @@
 
 ### Requirements
 Python >2.7 and <3.0.
+
 [PostgreSQL](https://www.codefellows.org/blog/three-battle-tested-ways-to-install-postgresql)
 
 ### Usage
