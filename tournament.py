@@ -4,6 +4,7 @@
 #
 
 import psycopg2
+import bleach
 
 
 def connect():
@@ -16,20 +17,26 @@ def connect():
 def deleteMatches():
     """Remove all the match records from the database."""
     DB, c = connect()
-    c.execute("DELETE FROM matches;")
+    c.execute("DELETE FROM matches")
+    DB.commit()
     DB.close()
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
     DB, c = connect()
-    c.execute("DELETE FROM players;")
+    c.execute("DELETE FROM players")
+    DB.commit()
     DB.close()
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
     DB, c = connect()
+    c.execute("SELECT count(*) AS num FROM players")
+    results = c.fetchall()
+    DB.close()
+    return results[0][0]
 
 
 def registerPlayer(name):
@@ -41,6 +48,11 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+    DB, c = connect()
+    c.execute("INSERT INTO players (name) VALUES (%s)",
+              (name,))
+    DB.commit()
+    DB.close()
 
 
 def playerStandings():
@@ -65,6 +77,11 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    DB, c = connect()
+    c.execute("INSERT INTO matches (winner, loser) VALUES (%s, %s)",
+              (winner, loser))
+    DB.commit()
+    DB.close()
 
 
 def swissPairings():
