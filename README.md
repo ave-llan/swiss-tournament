@@ -13,6 +13,6 @@ First, create the tournament database and tables:
 
 `psql` initialize the interactive terminal for PostgreSQL
 
-`\i tournament.sql` execute the contents of tournament.sql to create database and tables
+`\i tournament.sql` execute the contents of tournament.sql to create database, tables, and views
 
 `\q` exit Psql interactive
