@@ -3,9 +3,12 @@
 -- Put your SQL 'create table' statements in this file; also 'create view'
 -- statements if you choose to use it.
 --
+-- To install
+-- \i tournament.sql
 
 CREATE DATABASE tournament;
--- connect to the newly created tournament database
+
+--Connect to the newly created database
 \c tournament;
 
 CREATE TABLE players (
