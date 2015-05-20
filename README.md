@@ -5,6 +5,8 @@
 ### Requirements
 Python >2.7 and <3.0.
 
+[psycopg2](http://initd.org/psycopg/)
+
 [PostgreSQL](https://www.codefellows.org/blog/three-battle-tested-ways-to-install-postgresql)
 
 ### Usage
