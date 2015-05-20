@@ -18,7 +18,6 @@ CREATE TABLE players (
 
 CREATE TABLE matches (
     id serial PRIMARY KEY,
-    player1 int REFERENCES players(id),
-    player2 int REFERENCES players(id),
-    winner  int REFERENCES players(id)
+    winner int REFERENCES players(id),
+    loser int REFERENCES players(id)
 );
