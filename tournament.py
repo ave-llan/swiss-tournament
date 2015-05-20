@@ -71,8 +71,8 @@ def playerStandings():
     DB, c = connect()
     c.execute("SELECT * FROM standings")
     results = c.fetchall()
-    print results
     DB.close()
+    return results
 
 
 def reportMatch(winner, loser):
