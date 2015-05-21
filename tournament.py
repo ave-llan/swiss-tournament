@@ -13,10 +13,76 @@ def connect():
     return DB, c
 
 
-def deleteMatches():
-    """Remove all the match records from the database."""
+def registerPlayer(name):
+    """Adds a player to the tournament database.
+
+    The database assigns a unique serial id number for the player.
+
+    Args:
+      name: the player's full name (need not be unique).
+
+    Returns:
+      The ID number assigned to this player (as an int)
+    """
     DB, c = connect()
-    c.execute("DELETE FROM matches")
+    c.execute("INSERT INTO players (name) VALUES (%s) RETURNING id",
+              (name,))
+    id = c.fetchall()[0][0]
+    DB.commit()
+    DB.close()
+    return id
+
+
+def registerTour(name):
+    """Adds a tour to the tournaments database.
+
+    The database assigns a unique serial id number for the tour.
+
+    Args:
+      name: the tour's name (need not be unique).
+
+    Returns:
+      The ID number assigned to this tour (as an int)
+    """
+    DB, c = connect()
+    c.execute("INSERT INTO tours (name) VALUES (%s) RETURNING id",
+              (name,))
+    id = c.fetchall()[0][0]
+    DB.commit()
+    DB.close()
+    return id
+
+
+def enrollPlayerInTour(player_id, tour_id):
+    """Enrolls a player in a tour.
+
+    The database assigns a unique serial id number for the tour.
+
+    Args:
+      player_id: the player's unique id (player must be registered in tournament).
+      tour_id: the tour's unique id (tour must be registered in tournament)
+    """
+    DB, c = connect()
+    c.execute("INSERT INTO tour_registry (player, tour) VALUES (%s, %s)",
+              (player_id, tour_id))
+    DB.commit()
+    DB.close()
+
+def deleteTour(tour_id):
+    """Remove all records associated with this tour from the database.
+
+    Removes player_results results for matches that are part of this tour.
+    Removes matches associated with this tour.
+    Removes tour_registry of players for this tour
+    Removes tour from tours table.
+
+    Args:
+      tour_id: the tour's unique id# .
+    """
+    DB, c = connect()
+    c.execute("DELETE FROM player_results USING ")
+    c.execute("DELETE FROM matches WHERE matches.tour = %s",
+              (tour_id,))
     DB.commit()
     DB.close()
 
@@ -29,29 +95,13 @@ def deletePlayers():
     DB.close()
 
 
-def countPlayers():
+def countPlayers(tournament_id):
     """Returns the number of players currently registered."""
     DB, c = connect()
     c.execute("SELECT count(*) AS num FROM players")
     results = c.fetchall()
     DB.close()
     return results[0][0]
-
-
-def registerPlayer(name):
-    """Adds a player to the tournament database.
-
-    The database assigns a unique serial id number for the player.  (This
-    should be handled by your SQL database schema, not in your Python code.)
-
-    Args:
-      name: the player's full name (need not be unique).
-    """
-    DB, c = connect()
-    c.execute("INSERT INTO players (name) VALUES (%s)",
-              (name,))
-    DB.commit()
-    DB.close()
 
 
 def playerStandings():
