@@ -68,6 +68,38 @@ def enrollPlayerInTour(player_id, tour_id):
     DB.commit()
     DB.close()
 
+
+def createMatch(tour_id):
+    """Creates a match for this tour
+
+    ARGS:
+      tour_id: the tour's unique id (tour must be registered in tournament)
+    Returns:
+      The ID number assigned to this match (as an int)
+    """
+    DB, c = connect()
+    c.execute("INSERT INTO matches (tour) VALUES (%s) RETURNING id",
+              (tour_id,))
+    id = c.fetchall()[0][0]
+    DB.commit()
+    DB.close()
+    return id
+
+
+def countPlayers(tour_id):
+    """Returns the number of players currently registered for this tour.
+
+    Args:
+      tour_id: the tour's unique id#.
+    """
+    DB, c = connect()
+    c.execute("SELECT num FROM tour_enrollment WHERE id = %s",
+              (tour_id,))
+    enrollment_count = c.fetchall()[0][0]
+    DB.close()
+    return enrollment_count
+
+
 def deleteTour(tour_id):
     """Remove all records associated with this tour from the database.
 
@@ -77,7 +109,7 @@ def deleteTour(tour_id):
     Removes tour from tours table.
 
     Args:
-      tour_id: the tour's unique id# .
+      tour_id: the tour's unique id#.
     """
     DB, c = connect()
     c.execute("DELETE FROM player_results USING ")
@@ -85,23 +117,6 @@ def deleteTour(tour_id):
               (tour_id,))
     DB.commit()
     DB.close()
-
-
-def deletePlayers():
-    """Remove all the player records from the database."""
-    DB, c = connect()
-    c.execute("DELETE FROM players")
-    DB.commit()
-    DB.close()
-
-
-def countPlayers(tournament_id):
-    """Returns the number of players currently registered."""
-    DB, c = connect()
-    c.execute("SELECT count(*) AS num FROM players")
-    results = c.fetchall()
-    DB.close()
-    return results[0][0]
 
 
 def playerStandings():
