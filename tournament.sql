@@ -44,6 +44,16 @@ CREATE TABLE player_results (
     result match_result
 );
 
+
+--A view showing number of players registered for each tour
+CREATE VIEW tour_enrollment AS
+    SELECT tours.id, tours.name as tourName, count(tour_registry.player) as num
+    FROM tour_registry, tours
+    WHERE tours.id = tour_registry.tour
+    GROUP BY tours.id;
+
+
+
 /*
 --A view showing number of wins for each player
 CREATE VIEW win_record AS
