@@ -119,6 +119,36 @@ def deleteTour(tour_id):
     DB.close()
 
 
+
+def reportMatch(tour_id, winner, loser, draw=False):
+    """Records the outcome of a single match between two players.
+
+    Args:
+      tour_id: the id of the tour this match was part of
+      winner:  the id number of the player who won
+      loser:  the id number of the player who lost
+      draw: optional boolean indicating if this match was a draw (defaults to false)
+    """
+    # first, create the match
+    match_id = createMatch(tour_id)
+
+    DB, c = connect()
+
+    # insert the results into the player_results table
+    if draw:
+        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
+                  (winner, match_id, 'draw'))
+        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
+                  (loser, match_id, 'draw'))
+    else:
+        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
+                  (winner, match_id, 'win'))
+        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
+                  (loser, match_id, 'loss'))
+    DB.commit()
+    DB.close()
+
+
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
@@ -138,19 +168,6 @@ def playerStandings():
     DB.close()
     return results
 
-
-def reportMatch(winner, loser):
-    """Records the outcome of a single match between two players.
-
-    Args:
-      winner:  the id number of the player who won
-      loser:  the id number of the player who lost
-    """
-    DB, c = connect()
-    c.execute("INSERT INTO matches (winner, loser) VALUES (%s, %s)",
-              (winner, loser))
-    DB.commit()
-    DB.close()
 
 
 def swissPairings():

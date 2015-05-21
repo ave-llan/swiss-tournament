@@ -39,7 +39,7 @@ CREATE TABLE matches (
 -- for a match, shows whether this player won, lost, or if it was a draw
 CREATE TYPE match_result AS ENUM ('win', 'loss', 'draw');
 CREATE TABLE player_results (
-    id int REFERENCES players(id),
+    player int REFERENCES players(id),
     match int REFERENCES matches(id),
     result match_result
 );
