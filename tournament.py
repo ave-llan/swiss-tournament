@@ -134,7 +134,6 @@ def deleteTour(tour_id):
     DB.close()
 
 
-
 def reportMatch(tour_id, winner, loser, draw=False):
     """Records the outcome of a single match between two players.
 
@@ -164,8 +163,6 @@ def reportMatch(tour_id, winner, loser, draw=False):
     DB.close()
 
 
-
-
 # number of points assigned for a win or a draw (used to calculate score for player standings)
 WIN_POINTS  = 1.0
 DRAW_POINTS = 0.5
@@ -191,16 +188,18 @@ def opponentMatchScore(player_id, tour_id):
                         FROM player_results_with_tour
                         WHERE player = %(player)s AND tour = %(tour)s))""",
               {'winPoints': WIN_POINTS, 'drawPoints': DRAW_POINTS,
-              'player': player_id, 'tour': tour_id})
+               'player': player_id, 'tour': tour_id})
     oms = c.fetchall()[0][0]
     DB.close()
     return oms
+
 
 def playerStandings(tour_id):
     """Returns a list of the players and their win records, sorted by score.
 
     The first entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie.
+
 
     Args:
         tour_id: the unique id of the tour to use for report
@@ -220,7 +219,7 @@ def playerStandings(tour_id):
                 FROM players, standings
                 WHERE players.id = standings.player AND standings.tour = %s
                 ORDER BY score DESC""",
-                (WIN_POINTS, DRAW_POINTS, tour_id))
+              (WIN_POINTS, DRAW_POINTS, tour_id))
     results = c.fetchall()
     DB.close()
     # check for ties and break ties with opponentMatchScore
@@ -252,7 +251,7 @@ def alreadyPlayed(player1, player2, tour_id):
                     (SELECT match
                     FROM player_results_with_tour
                     WHERE player = %s AND tour = %s)""",
-                (player1, player2, tour_id))
+              (player1, player2, tour_id))
     gamesPlayed = c.fetchall()[0][0]
     DB.close()
     return gamesPlayed > 0
@@ -292,4 +291,3 @@ def swissPairings(tour_id):
                         standings[i+1][0],
                         standings[i+1][1]))
     return pairings
-
