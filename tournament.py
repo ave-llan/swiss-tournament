@@ -164,12 +164,12 @@ def reportMatch(tour_id, winner, loser, draw=False):
     DB.close()
 
 
-# number of points assigned for a win or a draw (used in playerStandings)
+# number of points assigned for a win or a draw (used to calculate score in playerStandings)
 WIN_POINTS = 1.0
 DRAW_POINTS = 0.5
 
 def playerStandings(tour_id):
-    """Returns a list of the players and their win records, sorted by wins.
+    """Returns a list of the players and their win records, sorted by score.
 
     The first entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie.
@@ -213,14 +213,17 @@ def PlayerMatchWins(player, tour):
     return results
 
 
-def swissPairings():
-    """Returns a list of pairs of players for the next round of a match.
+def swissPairings(tour_id):
+    """Returns a list of pairs of players for the next round of a match in this tour.
 
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
     player with an equal or nearly-equal win record, that is, a player adjacent
     to him or her in the standings.
 
+
+    Args:
+        tour_id: this tour's unique id#
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
@@ -228,7 +231,7 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-    standings = playerStandings()
+    standings = playerStandings(tour_id)
     pairings = []
     for i in range(0, len(standings), 2):
         pairings.append((standings[i][0],
@@ -236,7 +239,4 @@ def swissPairings():
                         standings[i+1][0],
                         standings[i+1][1]))
     return pairings
-
-
-
 
