@@ -165,7 +165,7 @@ def reportMatch(tour_id, winner, loser, draw=False):
 
 
 # number of points assigned for a win or a draw (used to calculate score in playerStandings)
-WIN_POINTS = 1.0
+WIN_POINTS  = 1.0
 DRAW_POINTS = 0.5
 
 def playerStandings(tour_id):
@@ -197,20 +197,23 @@ def playerStandings(tour_id):
     return results
 
 
-def PlayerMatchWins(player, tour):
-    """Returns the number of wins by this player in this tour (not counting buys)
+def playerScore(player_id, tour_id):
+    """Returns the score of this player in this tour
 
     Args:
-      player: unique ID# of the player registered for this tour
-      tour: unique ID# of tour
+      player_id: unique ID# of the player registered for this tour
+      tour_id: unique ID# of tour
     Returns:
-      the number (int) of wins by this player
+      the score of this player
     """
     DB, c = connect()
-    c.execute("SELECT * FROM standings")
-    results = c.fetchall()
+    c.execute("""SELECT (wins * %s) + (draws * %s) as score
+                From standings
+                Where player = %s AND tour = %s;""",
+                (WIN_POINTS, DRAW_POINTS, player_id, tour_id))
+    score = c.fetchall()[0][0]
     DB.close()
-    return results
+    return score
 
 
 def swissPairings(tour_id):
