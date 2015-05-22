@@ -164,25 +164,53 @@ def reportMatch(tour_id, winner, loser, draw=False):
     DB.close()
 
 
-def playerStandings():
+# number of points assigned for a win or a draw (used in playerStandings)
+WIN_POINTS = 1.0
+DRAW_POINTS = 0.5
+
+def playerStandings(tour_id):
     """Returns a list of the players and their win records, sorted by wins.
 
     The first entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie.
 
+    Args:
+        tour_id: the unique id of the tour to use for report
     Returns:
-      A list of tuples, each of which contains (id, name, wins, matches):
+      A list of tuples, each of which contains (id, name, wins, losses, draws, matches, score):
         id: the player's unique id (assigned by the database)
         name: the player's full name (as registered)
         wins: the number of matches the player has won
+        losses: the number of matches the player has lost
+        draws: the number of matches involving the player which ended in a draw
         matches: the number of matches the player has played
+    """
+    DB, c = connect()
+    c.execute("""SELECT players.id, players.name,
+                wins, losses, draws, played, (wins * %s) + (draws * %s) as score
+                FROM players, standings
+                WHERE players.id = standings.player AND standings.tour = %s
+                ORDER BY score DESC""",
+                (WIN_POINTS, DRAW_POINTS, tour_id))
+    results = c.fetchall()
+    DB.close()
+    return results
+
+
+def PlayerMatchWins(player, tour):
+    """Returns the number of wins by this player in this tour (not counting buys)
+
+    Args:
+      player: unique ID# of the player registered for this tour
+      tour: unique ID# of tour
+    Returns:
+      the number (int) of wins by this player
     """
     DB, c = connect()
     c.execute("SELECT * FROM standings")
     results = c.fetchall()
     DB.close()
     return results
-
 
 
 def swissPairings():
