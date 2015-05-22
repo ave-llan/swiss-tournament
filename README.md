@@ -59,7 +59,7 @@ Players can participate in multiple tours. Register them using `enrollPlayerInTo
 Each player is paired with another player with an equal or nearly-equal win record using `swissPairings(tour_id)`. Rematches are avoided, so all pairings are new. The function returns a list of tuples, each of which contains (id1, name1, id2, name2).
 ```
 >>> swissPairings(tourID['agility'])
-[(1, 'Rudy', 2, 'Fido'),...]
+[(1, 'Rudy', 2, 'Fido'),  ... ]
 ```
 Record the results of matches by using `reportMatch(tour_id, winner, loser, draw=False)`. If the match was a draw, you can supply the optional argument `draw=True`.
 ```
@@ -73,6 +73,8 @@ When two or more players have the same score, they are ranked according to the t
 Returns a list of tuples, each of which contains (id, name, wins, losses, draws, matches, score).
 ```
 >>> playerStandings(tourID['agility'])
-[(1, 'Rudy', 3, 0, 1, 4, 3.5), ...]
+[(1, 'Rudy', 3, 0, 1, 4, 3.5),  ... ]
 ```
 
+### Note to Udacity
+Here is a branch of this project which fulfills only the minimum requirements and works with the original `tournament_test.py`: https://github.com/jrleszcz/swiss-tournament/tree/basic-project
