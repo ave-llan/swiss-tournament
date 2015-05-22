@@ -112,9 +112,24 @@ def deleteTour(tour_id):
       tour_id: the tour's unique id#.
     """
     DB, c = connect()
-    c.execute("DELETE FROM player_results USING ")
-    c.execute("DELETE FROM matches WHERE matches.tour = %s",
+
+    # delete player_results associated with this tour
+    c.execute("""DELETE FROM player_results USING matches
+                    WHERE player_results.match = matches.id AND matches.tour = %s""",
               (tour_id,))
+
+    # delete matches associated with this tour
+    c.execute("DELETE FROM matches WHERE tour = %s",
+              (tour_id,))
+
+    # delete tour_registry of players for this tour
+    c.execute("DELETE FROM tour_registry WHERE tour = %s",
+              (tour_id,))
+
+    # finally, delete tour from tours table
+    c.execute("DELETE FROM tours WHERE id = %s",
+              (tour_id,))
+
     DB.commit()
     DB.close()
 
