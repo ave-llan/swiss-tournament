@@ -43,8 +43,10 @@ CREATE TABLE matches (
     tour int REFERENCES tours(id)
 );
 
--- for a match, shows whether this player won, lost, or if it was a draw
+-- type used in player_results
 CREATE TYPE match_result AS ENUM ('win', 'loss', 'draw');
+
+-- for a match, shows whether this player won, lost, or if it was a draw
 CREATE TABLE player_results (
     player int REFERENCES players(id),
     match int REFERENCES matches(id),
@@ -65,31 +67,46 @@ CREATE VIEW tour_enrollment AS
     WHERE tours.id = tour_registry.tour
     GROUP BY tours.id;
 
+-- adds tour column to player_results
+CREATE VIEW player_results_with_tour AS
+    SELECT player, matches.tour, player_results.match, result
+    FROM player_results, matches
+    WHERE player_results.match = matches.id;
 
+-- shows number of wins by player for each tour
+CREATE VIEW player_wins AS
+    SELECT tour_registry.player, tour_registry.tour, count(result) AS wins
+    FROM tour_registry LEFT JOIN player_results_with_tour
+        on tour_registry.player = player_results_with_tour.player
+        AND tour_registry.tour =  player_results_with_tour.tour
+        AND result = 'win'
+    GROUP BY tour_registry.player, tour_registry.tour
+    ORDER BY tour_registry.tour, tour_registry.player;
 
+-- shows number of losses by player for each tour
+CREATE VIEW player_losses AS
+    SELECT tour_registry.player, tour_registry.tour, count(result) AS losses
+    FROM tour_registry LEFT JOIN player_results_with_tour
+        on tour_registry.player = player_results_with_tour.player
+        AND tour_registry.tour =  player_results_with_tour.tour
+        AND result = 'loss'
+    GROUP BY tour_registry.player, tour_registry.tour
+    ORDER BY tour_registry.tour, tour_registry.player;
 
-/*
---A view showing number of wins for each player
-CREATE VIEW win_record AS
-    SELECT players.id, count(matches.winner) as num
-    FROM players LEFT JOIN matches
-        on players.id = matches.winner
-    GROUP BY players.id
-    ORDER BY num DESC;
+-- shows number of draws by player for each tour
+CREATE VIEW player_draws AS
+    SELECT tour_registry.player, tour_registry.tour, count(result) AS draws
+    FROM tour_registry LEFT JOIN player_results_with_tour
+        on tour_registry.player = player_results_with_tour.player
+        AND tour_registry.tour =  player_results_with_tour.tour
+        AND result = 'draw'
+    GROUP BY tour_registry.player, tour_registry.tour
+    ORDER BY tour_registry.tour, tour_registry.player;
 
---A view showing number of losses for each player
-CREATE VIEW loss_record AS
-    SELECT players.id, count(matches.loser) as num
-    FROM players LEFT JOIN matches
-        on players.id = matches.loser
-    GROUP BY players.id
-    ORDER BY num DESC;
-
---A view of players id, name, wins, and games played sorted by number of wins
+-- combination of wins, losses, draws also with total games played
 CREATE VIEW standings AS
-    SELECT players.id, players.name, win_record.num AS wins, win_record.num + loss_record.num AS played
-    FROM players, win_record, loss_record
-    WHERE players.id = win_record.id AND players.id = loss_record.id
-    ORDER BY win_record.num DESC;
-*/
-
+    SELECT player_wins.player, player_wins.tour, wins, losses, draws, wins + losses + draws AS played
+    FROM player_wins JOIN player_losses
+        on player_wins.player = player_losses.player AND player_wins.tour = player_losses.tour
+        JOIN player_draws
+        on player_wins.player = player_draws.player AND player_wins.tour = player_draws.tour;
