@@ -11,6 +11,13 @@ CREATE DATABASE tournament;
 -- Connect to the newly created database
 \c tournament;
 
+
+/**********
+*
+*  Tables
+*
+***********/
+
 -- Registry of player id's and their names
 CREATE TABLE players (
     id serial PRIMARY KEY,
@@ -45,12 +52,19 @@ CREATE TABLE player_results (
 );
 
 
---A view showing number of players registered for each tour
+/**********
+*
+*  Views
+*
+***********/
+
+-- shows number of players registered for each tour
 CREATE VIEW tour_enrollment AS
     SELECT tours.id, tours.name as tourName, count(tour_registry.player) as num
     FROM tour_registry, tours
     WHERE tours.id = tour_registry.tour
     GROUP BY tours.id;
+
 
 
 
