@@ -21,12 +21,17 @@ To create the tournament database and tables:
 
 ### Usage
 
-On the command line, import the tournament.py module's functions:
-`python`
-`from tournament import *`
+###### Start Python interpreter and import tournament module
 
-####Register players for your tournament.
+```
+python
+from tournament import *
+```
+
+###### Register players for your tournament.
+
 `registerPlayer('Rudy')`
+
 The database will assign a unique id# to each player which you will use to refer to this player going forward. `registerPlayer(name)` returns this id#, and you should probably capture it for future use like so:
 ```
 playerDictionary = {}
