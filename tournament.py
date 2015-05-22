@@ -235,13 +235,36 @@ def playerStandings(tour_id):
     return results
 
 
+def alreadyPlayed(player1, player2, tour_id):
+    """Have these two players already played in this tour?
+
+    Args:
+        player1: player's unique id#
+        player2: player's unique id#
+        tour_id: tour's unique id#
+    Returns:
+        A boolean indicating if this would be a rematch
+    """
+    DB, c = connect()
+    c.execute("""SELECT count(*) as gamesPlayed
+                FROM player_results
+                WHERE player = %s AND match IN
+                    (SELECT match
+                    FROM player_results_with_tour
+                    WHERE player = %s AND tour = %s)""",
+                (player1, player2, tour_id))
+    gamesPlayed = c.fetchall()[0][0]
+    DB.close()
+    return gamesPlayed > 0
+
+
 def swissPairings(tour_id):
     """Returns a list of pairs of players for the next round of a match in this tour.
 
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
     player with an equal or nearly-equal win record, that is, a player adjacent
-    to him or her in the standings.
+    to him or her in the standings.  Rematches are not allowed, so all pairings are new.
 
 
     Args:
@@ -255,7 +278,15 @@ def swissPairings(tour_id):
     """
     standings = playerStandings(tour_id)
     pairings = []
+
     for i in range(0, len(standings), 2):
+        for j in range(i+1, len(standings)):
+            if not alreadyPlayed(standings[i][0], standings[j][0], tour_id):
+                # good pair found, swap into place then break the inner loop
+                while j > i + 1:
+                    standings[j-1], standings[j] = standings[j], standings[j-1]
+                    j -= 1
+                break
         pairings.append((standings[i][0],
                         standings[i][1],
                         standings[i+1][0],
