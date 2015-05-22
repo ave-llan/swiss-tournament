@@ -206,12 +206,13 @@ def playerStandings(tour_id):
         tour_id: the unique id of the tour to use for report
     Returns:
       A list of tuples, each of which contains (id, name, wins, losses, draws, matches, score):
-        id: the player's unique id (assigned by the database)
-        name: the player's full name (as registered)
-        wins: the number of matches the player has won
-        losses: the number of matches the player has lost
-        draws: the number of matches involving the player which ended in a draw
-        matches: the number of matches the player has played
+        (0)id: the player's unique id (assigned by the database)
+        (1)name: the player's full name (as registered)
+        (2)wins: the number of matches the player has won
+        (3)losses: the number of matches the player has lost
+        (4)draws: the number of matches involving the player which ended in a draw
+        (5)matches: the number of matches the player has played
+        (6)score: the score of this player
     """
     DB, c = connect()
     c.execute("""SELECT players.id, players.name,
@@ -222,28 +223,16 @@ def playerStandings(tour_id):
                 (WIN_POINTS, DRAW_POINTS, tour_id))
     results = c.fetchall()
     DB.close()
+    # check for ties and break ties with opponentMatchScore
+    # sort using Insertion Sort because list is already mostly in order
+    for i in range(1, len(results)):
+        j = i
+        while(j > 0 and results[j][6] >= results[j-1][6] and
+              opponentMatchScore(results[j][0], tour_id) >
+              opponentMatchScore(results[j-1][0], tour_id)):
+            results[i-1], results[i] = results[i], results[i-1]
+            j -= 1
     return results
-
-
-def playerScore(player_id, tour_id):
-    """Returns the current score of this player in this tour
-
-    Args:
-      player_id: unique ID# of the player registered for this tour
-      tour_id: unique ID# of tour
-    Returns:
-      the score of this player
-    """
-    DB, c = connect()
-    c.execute("""SELECT (wins * %s) + (draws * %s) as score
-                From standings
-                Where player = %s AND tour = %s;""",
-                (WIN_POINTS, DRAW_POINTS, player_id, tour_id))
-    score = c.fetchall()[0][0]
-    DB.close()
-    return score
-
-
 
 
 def swissPairings(tour_id):
