@@ -26,7 +26,7 @@ To create the tournament database and tables:
 Start the Python interpreter and import the tournament.py module.
 
 ```
->>> python
+python
 >>> from tournament import *
 ```
 
