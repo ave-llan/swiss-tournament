@@ -24,9 +24,13 @@ def registerPlayer(name):
     Returns:
       The ID number assigned to this player (as an int)
     """
+    query = ("INSERT INTO players (name) "
+             "VALUES (%s) "
+             "RETURNING id")
+    param = (name,)
+
     DB, c = connect()
-    c.execute("INSERT INTO players (name) VALUES (%s) RETURNING id",
-              (name,))
+    c.execute(query, param)
     id = c.fetchall()[0][0]
     DB.commit()
     DB.close()
@@ -44,9 +48,13 @@ def registerTour(name):
     Returns:
       The ID number assigned to this tour (as an int)
     """
+    query = ("INSERT INTO tours (name) "
+             "VALUES (%s) "
+             "RETURNING id")
+    param = (name,)
+
     DB, c = connect()
-    c.execute("INSERT INTO tours (name) VALUES (%s) RETURNING id",
-              (name,))
+    c.execute(query, param)
     id = c.fetchall()[0][0]
     DB.commit()
     DB.close()
@@ -62,9 +70,12 @@ def enrollPlayerInTour(player_id, tour_id):
       player_id: the player's unique id (player must be registered in tournament).
       tour_id: the tour's unique id (tour must be registered in tournament)
     """
+    query = ("INSERT INTO tour_registry (player, tour) "
+             "VALUES (%s, %s)")
+    param = (player_id, tour_id)
+
     DB, c = connect()
-    c.execute("INSERT INTO tour_registry (player, tour) VALUES (%s, %s)",
-              (player_id, tour_id))
+    c.execute(query, param)
     DB.commit()
     DB.close()
 
@@ -77,9 +88,13 @@ def createMatch(tour_id):
     Returns:
       The ID number assigned to this match (as an int)
     """
+    query = ("INSERT INTO matches (tour) "
+             "VALUES (%s) "
+             "RETURNING id")
+    param = (tour_id,)
+
     DB, c = connect()
-    c.execute("INSERT INTO matches (tour) VALUES (%s) RETURNING id",
-              (tour_id,))
+    c.execute(query, param)
     id = c.fetchall()[0][0]
     DB.commit()
     DB.close()
@@ -92,9 +107,13 @@ def countPlayers(tour_id):
     Args:
       tour_id: the tour's unique id#.
     """
+    query = ("SELECT num "
+             "FROM tour_enrollment "
+             "WHERE id = %s")
+    param = (tour_id,)
+
     DB, c = connect()
-    c.execute("SELECT num FROM tour_enrollment WHERE id = %s",
-              (tour_id,))
+    c.execute(query, param)
     enrollment_count = c.fetchall()[0][0]
     DB.close()
     return enrollment_count
@@ -103,32 +122,44 @@ def countPlayers(tour_id):
 def deleteTour(tour_id):
     """Remove all records associated with this tour from the database.
 
+
     Removes player_results results for matches that are part of this tour.
     Removes matches associated with this tour.
     Removes tour_registry of players for this tour
     Removes tour from tours table.
+
 
     Args:
       tour_id: the tour's unique id#.
     """
     DB, c = connect()
 
+    # build a list of queries
+    queries = []
+
     # delete player_results associated with this tour
-    c.execute("""DELETE FROM player_results USING matches
-                    WHERE player_results.match = matches.id AND matches.tour = %s""",
-              (tour_id,))
+    queries.append(("DELETE FROM player_results "
+                    "USING matches "
+                    "WHERE player_results.match = matches.id AND "
+                    "matches.tour = %s"))
 
     # delete matches associated with this tour
-    c.execute("DELETE FROM matches WHERE tour = %s",
-              (tour_id,))
+    queries.append(("DELETE FROM matches "
+                    "WHERE tour = %s"))
 
     # delete tour_registry of players for this tour
-    c.execute("DELETE FROM tour_registry WHERE tour = %s",
-              (tour_id,))
+    queries.append(("DELETE FROM tour_registry "
+                    "WHERE tour = %s"))
 
     # finally, delete tour from tours table
-    c.execute("DELETE FROM tours WHERE id = %s",
-              (tour_id,))
+    queries.append(("DELETE FROM tours "
+                    "WHERE id = %s"))
+
+    # all of the queries use this param
+    param = (tour_id,)
+
+    for query in queries:
+        c.execute(query, param)
 
     DB.commit()
     DB.close()
@@ -148,17 +179,17 @@ def reportMatch(tour_id, winner, loser, draw=False):
 
     DB, c = connect()
 
+    query = ("INSERT INTO player_results (player, match, result) "
+             "VALUES (%s, %s, %s)")
+
     # insert the results into the player_results table
     if draw:
-        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
-                  (winner, match_id, 'draw'))
-        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
-                  (loser, match_id, 'draw'))
+        c.execute(query, (winner, match_id, 'draw'))
+        c.execute(query, (loser, match_id, 'draw'))
     else:
-        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
-                  (winner, match_id, 'win'))
-        c.execute("INSERT INTO player_results (player, match, result) VALUES (%s, %s, %s)",
-                  (loser, match_id, 'loss'))
+        c.execute(query, (winner, match_id, 'win'))
+        c.execute(query, (loser, match_id, 'loss'))
+
     DB.commit()
     DB.close()
 
@@ -178,17 +209,21 @@ def opponentMatchScore(player_id, tour_id):
         tour_id: tour's unique id#
     Returns: the total score of all opponents
     """
+    query = ("SELECT SUM(wins * %(winPoints)s + draws * %(drawPoints)s) "
+             "FROM standings where tour = %(tour)s AND player IN "
+                "(SELECT player "
+                "FROM player_results "
+                "WHERE player != %(player)s AND match IN "
+                    "(SELECT match "
+                    "FROM player_results_with_tour "
+                    "WHERE player = %(player)s AND tour = %(tour)s))")
+    param = {'winPoints': WIN_POINTS, 
+             'drawPoints': DRAW_POINTS,
+             'player': player_id, 
+             'tour': tour_id}
+
     DB, c = connect()
-    c.execute("""SELECT SUM(wins * %(winPoints)s + draws * %(drawPoints)s) AS oms
-                FROM standings where tour = %(tour)s AND player IN
-                    (SELECT player
-                    FROM player_results
-                    WHERE player != %(player)s AND match IN
-                        (SELECT match
-                        FROM player_results_with_tour
-                        WHERE player = %(player)s AND tour = %(tour)s))""",
-              {'winPoints': WIN_POINTS, 'drawPoints': DRAW_POINTS,
-               'player': player_id, 'tour': tour_id})
+    c.execute(query, param)
     oms = c.fetchall()[0][0]
     DB.close()
     return oms
@@ -244,14 +279,16 @@ def alreadyPlayed(player1, player2, tour_id):
     Returns:
         A boolean indicating if this would be a rematch
     """
+    query = ("SELECT count(*) as gamesPlayed "
+             "FROM player_results "
+             "WHERE player = %s AND match IN "
+                "(SELECT match "
+                "FROM player_results_with_tour "
+                "WHERE player = %s AND tour = %s)")
+    param = (player1, player2, tour_id)
+
     DB, c = connect()
-    c.execute("""SELECT count(*) as gamesPlayed
-                FROM player_results
-                WHERE player = %s AND match IN
-                    (SELECT match
-                    FROM player_results_with_tour
-                    WHERE player = %s AND tour = %s)""",
-              (player1, player2, tour_id))
+    c.execute(query, param)
     gamesPlayed = c.fetchall()[0][0]
     DB.close()
     return gamesPlayed > 0
