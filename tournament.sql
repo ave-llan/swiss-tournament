@@ -6,6 +6,10 @@
 -- To install
 -- \i tournament.sql
 
+
+--Delete previous tournament database if it exists
+DROP DATABASE IF EXISTS tournament;
+
 CREATE DATABASE tournament;
 
 -- Connect to the newly created database
