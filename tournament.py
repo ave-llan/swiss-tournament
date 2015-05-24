@@ -323,8 +323,6 @@ def swissPairings(tour_id):
                     standings[j-1], standings[j] = standings[j], standings[j-1]
                     j -= 1
                 break
-        pairings.append((standings[i][0],
-                        standings[i][1],
-                        standings[i+1][0],
-                        standings[i+1][1]))
+        pairings.append((standings[i][0], standings[i][1],
+                        standings[i+1][0], standings[i+1][1]))
     return pairings
