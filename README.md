@@ -75,6 +75,3 @@ Returns a list of tuples, each of which contains (id, name, wins, losses, draws,
 >>> playerStandings(tourID['agility'])
 [(1, 'Rudy', 3, 0, 1, 4, 3.5),  ... ]
 ```
-
-### Note to Udacity
-Here is a branch of this project which fulfills only the minimum requirements and works with the original `tournament_test.py`: https://github.com/jrleszcz/swiss-tournament/tree/basic-project
