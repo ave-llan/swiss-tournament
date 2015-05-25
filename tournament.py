@@ -106,6 +106,7 @@ def countPlayers(tour_id):
 
     Args:
       tour_id: the tour's unique id#.
+    Returns: Number of players enrolled in this tour
     """
     query = ("SELECT num "
              "FROM tour_enrollment "
