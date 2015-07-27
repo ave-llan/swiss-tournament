@@ -1,6 +1,9 @@
 # Swiss Tournament
 
- A Python module that keeps tracks of players and determines matches for a [Swiss tournament](http://en.wikipedia.org/wiki/Swiss-system_tournament) using the PostgreSQL database.
+A smarter tournament system in which players are paired with those of similar skill level and everyone competes in every round.  More fair than an elimination bracket and more efficient than a round-robin tournament. 
+
+A PostgreSQL database stores match results, and a Python module queries the database to rank and pair players.  When two players have the same win record, ties are broken by summing the win record of each player's previous opponents. 
+
 
 ### Requirements
 Python >2.7 and <3.0.
